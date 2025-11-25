@@ -22,7 +22,7 @@ class UserRepository:
         print(result)
         return list(result.scalars().all())
 
-    async def create(self,  user_data: UserCreate) -> User:
+    async def create(self, user_data: UserCreate) -> User:
         user = User(**user_data.model_dump())
         self.session.add(user)
         await self.session.commit()

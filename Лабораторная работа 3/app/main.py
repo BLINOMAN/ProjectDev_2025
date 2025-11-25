@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from repositories.user_repository import UserRepository
 from services.user_service import UserService
-from controller.user_controller import UserController
+from controllers.user_controller import UserController
 
 # Настройка базы данных
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres")

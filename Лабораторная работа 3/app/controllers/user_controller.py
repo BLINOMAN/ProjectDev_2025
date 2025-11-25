@@ -1,9 +1,7 @@
 from litestar import Controller, get, post, put, delete
-from litestar.di import Provide
-from litestar.params import Parameter
+from litestar.params import Parameter, Body
 from litestar.exceptions import NotFoundException, ValidationException
 from litestar.status_codes import HTTP_204_NO_CONTENT
-from typing import List
 from services.user_service import UserService
 from schemas.user_schemas import UserCreate, UserUpdate, UserResponse
 
@@ -45,11 +43,11 @@ class UserController(Controller):
     async def create_user(
             self,
             user_service: UserService,
-            user_data: UserCreate,
+            data: UserCreate = Body(media_type="application/json")
     ) -> UserResponse:
         """Создать нового пользователя"""
         try:
-            user = await user_service.create(user_data)
+            user = await user_service.create(data)
             return UserResponse.model_validate(user)
         except ValueError as e:
             raise ValidationException(detail=str(e))
@@ -70,11 +68,11 @@ class UserController(Controller):
             self,
             user_service: UserService,
             user_id: str,
-            user_data: UserUpdate,
+            data: UserUpdate = Body(media_type="application/json"),
     ) -> UserResponse:
         """Обновить пользователя"""
         try:
-            user = await user_service.update(user_id, user_data)
+            user = await user_service.update(user_id, data)
             if not user:
                 raise NotFoundException(detail=f"User with ID {user_id} not found")
             return UserResponse.model_validate(user)
