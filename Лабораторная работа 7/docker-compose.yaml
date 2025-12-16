@@ -1,0 +1,61 @@
+version: '3.3'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: test_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: app
+      RABBITMQ_DEFAULT_PASS: app
+      RABBITMQ_DEFAULT_VHOST: local
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/mnesia
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=localhost
+      - PORT=8000
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    entrypoint: ["sh", "-c", "./entrypoint.sh"]
+
+  producer:
+    build: .
+    command: python producer.py
+    environment:
+      - RABBITMQ_URL=amqp://app:app@rabbitmq:5672/local
+    volumes:
+      - .:/app
+    depends_on:
+      - rabbitmq
+      - app
+    profiles:
+      - producer
+  
+volumes:
+  postgres_data:
+  rabbitmq_data:
